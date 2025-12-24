@@ -1,0 +1,314 @@
+[
+  {
+    "consistency_check": "ERROR",
+    "errors": [
+      "Divergência em cancelamentos: ES=0 vs DynamoDB=1",
+      "Divergência no total cancelado: ES=0 vs DynamoDB=10000",
+      "Divergência no array de cancelamentos: ES=0 itens vs DynamoDB=1 eventos"
+    ],
+    "id_recebivel": "4395079e-5bec-4505-b7df-773200428266",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 1,
+      "dynamo_total_eventos": 3,
+      "es_quantidade_eventos": 3,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 1,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 3
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "41da5c49-8c0a-45ed-a70f-f183acfbf0f5",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 1,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 1
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "ERROR",
+    "errors": [
+      "Divergência no valor original: ES= vs DynamoDB=10000"
+    ],
+    "id_recebivel": "b76159ea-0901-4b61-94ea-80e5ea7bbe12",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 1,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "ERROR",
+    "errors": [
+      "Divergência em negociações: ES=0 vs DynamoDB=1",
+      "Divergência no total negociado: ES=0 vs DynamoDB=3252.24",
+      "Divergência no array de negociações: ES=0 itens vs DynamoDB=1 eventos"
+    ],
+    "id_recebivel": "ca9a58d7-e7ff-4d24-86df-b2b9cb63fe06",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 1,
+      "dynamo_total_eventos": 3,
+      "es_quantidade_eventos": 3,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 1
+    },
+    "dynamodb_events": 3
+  },
+  {
+    "consistency_check": "ERROR",
+    "errors": [
+      "Divergência no valor original: ES= vs DynamoDB=10000"
+    ],
+    "id_recebivel": "58023d5d-1958-4849-bb49-7cd5db73578b",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "0db9a3e1-267e-4c3d-bec1-1e0d0d896bf4",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 1,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "68600e15-401b-4082-9d0e-d68fd451f81f",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "9d678b54-d468-4e3a-b45b-e02445381ef8",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "4dedf9e3-01dc-4788-a76e-33379c8ac65e",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 1,
+      "dynamo_total_eventos": 3,
+      "es_quantidade_eventos": 3,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 1,
+      "es_quantidade_cancelamentos": 1
+    },
+    "dynamodb_events": 3
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "92306b40-98b5-42ed-8dee-13a49028b186",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "471067aa-3ac4-421a-9559-65c8fcdaae96",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 1,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "9121f603-69e0-41ff-b775-31b8f6af42e2",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "06b464bc-98c2-4a01-8651-1b103ae0015b",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "17919d01-a87a-4807-8522-d4beccac25f9",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "a8ff8c43-8dd3-46f7-ae25-1052df576ad4",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "62f3102d-7497-4a80-957f-8e67a8e885c7",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 1,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 1
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "60ea9e3c-456e-414e-bd3e-f9d95307602d",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 1,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 1
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "79336f35-657d-4b0d-9b5c-115dcef2a3a0",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "83e00601-56c8-4784-a9c2-cae38460b258",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 2,
+      "es_quantidade_eventos": 2,
+      "dynamo_negociacoes": 1,
+      "es_quantidade_negociacoes": 1,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 2
+  },
+  {
+    "consistency_check": "OK",
+    "errors": [],
+    "id_recebivel": "6393fc06-7718-4089-beb6-70ba281b45d8",
+    "elasticsearch_exists": true,
+    "details": {
+      "dynamo_cancelamentos": 0,
+      "dynamo_total_eventos": 1,
+      "es_quantidade_eventos": 1,
+      "dynamo_negociacoes": 0,
+      "es_quantidade_negociacoes": 0,
+      "es_quantidade_cancelamentos": 0
+    },
+    "dynamodb_events": 1
+  }
+]

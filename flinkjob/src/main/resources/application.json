@@ -1,0 +1,31 @@
+{
+  "kafka": {
+    "bootstrap.servers": "kafka:29092",
+    "group.id": "flink-aggregator",
+    "input.topics": ["recebiveis-agendados", "recebiveis-cancelados", "recebiveis-negociados"],
+    "auto.offset.reset": "earliest"
+  },
+  "aggregation": {
+    "id.jsonpath": "$.id_recebivel",
+    "window.size.minutes": 0.25,
+    "allowed.lateness.minutes": 1
+  },
+  "dynamodb": {
+    "endpoint": "http://dynamodb:8000",
+    "region": "us-east-1",
+    "table.name": "Recebiveis",
+    "partition.key": "id_recebivel",
+    "sort.key": "tipo_evento",
+    "sort.key.jsonpath": "$.tipo_evento"
+  },
+  "elasticsearch": {
+    "hosts": ["http://elasticsearch:9200"],
+    "index.name": "ciclo_vida_recebiveis",
+    "bulk.flush.max.actions": 1000,
+    "bulk.flush.interval.ms": 5000
+  },
+  "flink": {
+    "checkpoint.interval.ms": 60000,
+    "parallelism": 2
+  }
+}

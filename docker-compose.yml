@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Zookeeper - necessário para o Kafka
   zookeeper:
@@ -68,11 +66,9 @@ services:
   dynamodb:
     image: amazon/dynamodb-local:latest
     container_name: dynamodb-local
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /data"
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
     ports:
       - "8000:8000"
-    volumes:
-      - dynamodb-data:/data
     networks:
       - flink-network
 
@@ -106,6 +102,9 @@ services:
         state.backend: filesystem
         state.checkpoints.dir: file:///tmp/flink-checkpoints
         state.savepoints.dir: file:///tmp/flink-savepoints
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
       - flink-savepoints:/tmp/flink-savepoints
@@ -116,11 +115,11 @@ services:
   # Flink TaskManager
   taskmanager:
     image: flink:1.18.0-scala_2.12-java11
-    container_name: flink-taskmanager
     depends_on:
       - jobmanager
     command: taskmanager
-    scale: 2
+    deploy:
+      replicas: 2
     environment:
       - |
         FLINK_PROPERTIES=
@@ -128,11 +127,90 @@ services:
         taskmanager.numberOfTaskSlots: 4
         state.backend: filesystem
         state.checkpoints.dir: file:///tmp/flink-checkpoints
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
     volumes:
       - flink-checkpoints:/tmp/flink-checkpoints
       - ./jobs:/opt/flink/usrlib
     networks:
       - flink-network
+
+  # Spark Master
+  spark-master:
+    image: bitnami/spark:3.5.0
+    container_name: spark-master
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MASTER_WEBUI_PORT=8080
+    ports:
+      - "7077:7077"
+      - "8082:8080"
+    volumes:
+      - ./sparkjob:/opt/spark-apps
+      - spark-checkpoints:/tmp/spark-checkpoints
+    networks:
+      - flink-network
+
+  # Spark Worker
+  spark-worker:
+    image: bitnami/spark:3.5.0
+    depends_on:
+      - spark-master
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=2G
+      - SPARK_WORKER_CORES=2
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    deploy:
+      replicas: 2
+    volumes:
+      - ./sparkjob:/opt/spark-apps
+      - spark-checkpoints:/tmp/spark-checkpoints
+    networks:
+      - flink-network
+
+  # Spark Job Runner
+  spark-job:
+    image: bitnami/spark:3.5.0
+    container_name: spark-job
+    depends_on:
+      - spark-master
+      - kafka
+      - dynamodb
+      - elasticsearch
+    environment:
+      - SPARK_MODE=client
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=local
+      - AWS_SECRET_ACCESS_KEY=local
+    volumes:
+      - ./sparkjob:/opt/spark-apps
+      - spark-checkpoints:/tmp/spark-checkpoints
+    working_dir: /opt/spark-apps
+    command: >
+      bash -c "
+        pip install -q boto3 elasticsearch pyspark &&
+        spark-submit \
+          --master spark://spark-master:7077 \
+          --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.elasticsearch:elasticsearch-spark-30_2.12:8.11.0 \
+          --conf spark.sql.streaming.checkpointLocation=/tmp/spark-checkpoints \
+          --conf spark.sql.shuffle.partitions=10 \
+          /opt/spark-apps/src/receivable_aggregator.py
+      "
+    networks:
+      - flink-network
+    profiles:
+      - spark-streaming
 
 networks:
   flink-network:
@@ -146,4 +224,6 @@ volumes:
   flink-checkpoints:
     driver: local
   flink-savepoints:
+    driver: local
+  spark-checkpoints:
     driver: local

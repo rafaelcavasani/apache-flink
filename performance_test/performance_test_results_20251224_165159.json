@@ -1,0 +1,20 @@
+{
+  "test_time": "2025-12-24 16:49:52",
+  "metrics": {
+    "aggregation_rate_per_sec": 117.78,
+    "total_duration_seconds": 127.36,
+    "processing_rate_events_per_sec": 78.52,
+    "avg_events_per_aggregation": 1.61,
+    "aggregations_created": 15000,
+    "events_sent": 10000,
+    "unique_payments": 0,
+    "send_rate_events_per_sec": 93.18,
+    "producer_duration_seconds": 107.32
+  },
+  "config": {
+    "workers": 20,
+    "window_seconds": 15,
+    "event_count": 10000,
+    "interval_ms": 10
+  }
+}

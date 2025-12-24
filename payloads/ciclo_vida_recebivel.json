@@ -1,0 +1,30 @@
+{
+    "id_recebivel": "a7f3c8e2-9b4d-4f6a-8c2e-5d7b9f1a3e6c",
+    "id_pagamento": "b1e2f3a4-5b6c-7d8e-9f0a-1b2c3d4e5f6g",
+    "codigo_produto": 123,
+    "codigo_produto_parceiro": 25,
+    "modalidade": 1,
+    "valor_original": 10000.00,
+    "data_vencimento": "2025-12-31",
+    "cancelamentos": [
+        {
+            "id_cancelamento": "c3d9f8e4-2b6a-4f7b-9d3e-6f8b0f2b4d7c",
+            "data_cancelamento": "2025-12-21",
+            "valor_cancelado": 1000.00,
+            "motivo": "Cliente solicitou cancelamento parcial."
+        },
+        {
+            "id_cancelamento": "c3d9f8e4-2b6a-4f7b-9d3e-6f8b0f2b4d7d",
+            "data_cancelamento": "2025-12-12",
+            "valor_cancelado": 500.00,
+            "motivo": "Cliente solicitou cancelamento parcial."
+        }
+    ],
+    "negociacoes": [
+        {
+            "id_negociacao": "d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f7g",
+            "data_negociacao": "2025-12-19",
+            "valor_negociado": 500.00
+        }
+    ]
+}

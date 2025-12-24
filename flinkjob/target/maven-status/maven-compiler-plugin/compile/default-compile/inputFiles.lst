@@ -1,0 +1,10 @@
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\functions\DynamoDBEnricher.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\functions\DynamoDBEventWriter.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\functions\ElasticsearchSink.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\functions\EventAggregator.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\functions\JsonPathExtractor.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\GenericEventAggregator.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\models\AggregationResult.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\models\CicloVidaRecebivel.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\models\EnrichedAggregation.java
+C:\Users\rafae\OneDrive\Documentos\Workspace\apacheflink\flinkjob\src\main\java\com\aggregator\models\EventWithId.java

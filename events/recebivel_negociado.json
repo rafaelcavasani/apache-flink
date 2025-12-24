@@ -1,0 +1,10 @@
+{
+    "id_recebivel": "a7f3c8e2-9b4d-4f6a-8c2e-5d7b9f1a3e6c",
+    "id_negociacao": "d4e5f6a7-b8c9-4d0e-9f1a-2b3c4d5e6f7g",
+    "codigo_produto": 123,
+    "codigo_produto_parceiro": 25,
+    "modalidade": 1,
+    "valor_negociado": 500.00,
+    "data_negociacao": "2025-12-19",
+    "tipo_evento": "NEGOCIADO"
+}

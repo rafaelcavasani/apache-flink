@@ -1,0 +1,12 @@
+com\aggregator\functions\EventAggregator.class
+com\aggregator\functions\DynamoDBEventWriter.class
+com\aggregator\functions\ElasticsearchSink.class
+com\aggregator\models\CicloVidaRecebivel$Negociacao.class
+com\aggregator\models\EnrichedAggregation.class
+com\aggregator\functions\JsonPathExtractor.class
+com\aggregator\models\AggregationResult.class
+com\aggregator\models\CicloVidaRecebivel$Cancelamento.class
+com\aggregator\functions\DynamoDBEnricher.class
+com\aggregator\GenericEventAggregator.class
+com\aggregator\models\EventWithId.class
+com\aggregator\models\CicloVidaRecebivel.class
