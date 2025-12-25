@@ -199,8 +199,8 @@ services:
       - |
         mkdir -p /tmp/spark-checkpoints
         chmod 777 /tmp/spark-checkpoints
-        apt-get update -qq && apt-get install -y -qq zip > /dev/null 2>&1
-        pip install boto3 elasticsearch
+        apt-get update -qq && apt-get install -y -qq zip python3 python3-pip > /dev/null 2>&1
+        pip3 install --break-system-packages boto3 elasticsearch
         cd /opt/spark-apps/src
         zip -q ../modules.zip *.py
         cd /opt/spark-apps
@@ -210,8 +210,8 @@ services:
           --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.elasticsearch:elasticsearch-spark-30_2.12:8.11.0 \
           --conf spark.sql.streaming.checkpointLocation=/tmp/spark-checkpoints \
           --conf spark.sql.shuffle.partitions=10 \
-          --conf spark.pyspark.python=/usr/local/bin/python3 \
-          --conf spark.pyspark.driver.python=/usr/local/bin/python3 \
+          --conf spark.pyspark.python=/usr/bin/python3 \
+          --conf spark.pyspark.driver.python=/usr/bin/python3 \
           --conf spark.executorEnv.PIP_PACKAGES="boto3 elasticsearch" \
           /opt/spark-apps/src/receivable_aggregator.py
     networks:
