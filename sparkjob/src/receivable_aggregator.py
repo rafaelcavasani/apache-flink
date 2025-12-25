@@ -225,7 +225,7 @@ def main():
             .foreachBatch(lambda batch_df, batch_id: process_batch(batch_df, batch_id, config))
             .outputMode("update")
             .option("checkpointLocation", config["spark"]["checkpoint.location"])
-            .trigger(processingTime=f"{config['aggregation']['window.size.minutes']} minutes")
+            .trigger(processingTime="15 seconds")
             .start()
         )
         

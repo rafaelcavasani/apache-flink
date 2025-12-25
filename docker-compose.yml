@@ -138,15 +138,11 @@ services:
 
   # Spark Master
   spark-master:
-    image: bitnami/spark:3.5.0
+    image: apache/spark:3.5.0
     container_name: spark-master
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     environment:
-      - SPARK_MODE=master
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-      - SPARK_MASTER_WEBUI_PORT=8080
+      - SPARK_NO_DAEMONIZE=1
     ports:
       - "7077:7077"
       - "8082:8080"
@@ -158,18 +154,19 @@ services:
 
   # Spark Worker
   spark-worker:
-    image: bitnami/spark:3.5.0
+    image: apache/spark:3.5.0
     depends_on:
       - spark-master
+    command:
+      - /bin/bash
+      - -c
+      - |
+        pip install -q boto3 elasticsearch
+        /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark-master:7077
     environment:
-      - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://spark-master:7077
-      - SPARK_WORKER_MEMORY=2G
+      - SPARK_NO_DAEMONIZE=1
       - SPARK_WORKER_CORES=2
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
+      - SPARK_WORKER_MEMORY=2g
     deploy:
       replicas: 2
     volumes:
@@ -180,16 +177,15 @@ services:
 
   # Spark Job Runner
   spark-job:
-    image: bitnami/spark:3.5.0
+    image: apache/spark:3.5.0
     container_name: spark-job
+    user: root
     depends_on:
       - spark-master
       - kafka
       - dynamodb
       - elasticsearch
     environment:
-      - SPARK_MODE=client
-      - SPARK_MASTER_URL=spark://spark-master:7077
       - AWS_REGION=us-east-1
       - AWS_ACCESS_KEY_ID=local
       - AWS_SECRET_ACCESS_KEY=local
@@ -197,16 +193,27 @@ services:
       - ./sparkjob:/opt/spark-apps
       - spark-checkpoints:/tmp/spark-checkpoints
     working_dir: /opt/spark-apps
-    command: >
-      bash -c "
-        pip install -q boto3 elasticsearch pyspark &&
-        spark-submit \
+    command:
+      - /bin/bash
+      - -c
+      - |
+        mkdir -p /tmp/spark-checkpoints
+        chmod 777 /tmp/spark-checkpoints
+        apt-get update -qq && apt-get install -y -qq zip > /dev/null 2>&1
+        pip install boto3 elasticsearch
+        cd /opt/spark-apps/src
+        zip -q ../modules.zip *.py
+        cd /opt/spark-apps
+        /opt/spark/bin/spark-submit \
           --master spark://spark-master:7077 \
+          --py-files /opt/spark-apps/modules.zip \
           --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,org.elasticsearch:elasticsearch-spark-30_2.12:8.11.0 \
           --conf spark.sql.streaming.checkpointLocation=/tmp/spark-checkpoints \
           --conf spark.sql.shuffle.partitions=10 \
+          --conf spark.pyspark.python=/usr/local/bin/python3 \
+          --conf spark.pyspark.driver.python=/usr/local/bin/python3 \
+          --conf spark.executorEnv.PIP_PACKAGES="boto3 elasticsearch" \
           /opt/spark-apps/src/receivable_aggregator.py
-      "
     networks:
       - flink-network
     profiles:

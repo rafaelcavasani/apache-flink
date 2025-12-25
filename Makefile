@@ -140,29 +140,17 @@ spark-local: ## Executa o job Spark localmente (fora do Docker)
 
 init-db: ## Cria a tabela no DynamoDB
 	@echo "$(BLUE)🗄️  Criando tabela DynamoDB...$(RESET)"
-	@if command -v pwsh > /dev/null; then \
-		cd scripts && pwsh -File init-dynamodb.ps1; \
-	else \
-		cd scripts && bash init-dynamodb.sh; \
-	fi
+	cd scripts && pwsh -File init-dynamodb.ps1
 	@echo "$(GREEN)✅ Tabela DynamoDB criada!$(RESET)"
 
 init-es: ## Cria o índice no Elasticsearch
 	@echo "$(BLUE)🔍 Criando índice Elasticsearch...$(RESET)"
-	@if command -v pwsh > /dev/null; then \
-		cd scripts && pwsh -File init-elasticsearch.ps1; \
-	else \
-		cd scripts && bash init-elasticsearch.sh; \
-	fi
+	cd scripts && pwsh -File init-elasticsearch.ps1
 	@echo "$(GREEN)✅ Índice Elasticsearch criado!$(RESET)"
 
 init-kafka: ## Cria os tópicos no Kafka
 	@echo "$(BLUE)📨 Criando tópicos Kafka...$(RESET)"
-	@if command -v pwsh > /dev/null; then \
-		cd scripts && pwsh -File init-kafka.ps1; \
-	else \
-		cd scripts && bash init-kafka.sh; \
-	fi
+	cd scripts && pwsh -File init-kafka.ps1
 	@echo "$(GREEN)✅ Tópicos Kafka criados!$(RESET)"
 
 init: init-kafka init-db init-es ## Inicializa todos os recursos (Kafka, DynamoDB, Elasticsearch)
@@ -185,13 +173,7 @@ producer-continuous: ## Executa o producer continuamente (2 minutos)
 
 validate: ## Valida consistência entre DynamoDB e Elasticsearch
 	@echo "$(BLUE)🔍 Validando consistência de dados...$(RESET)"
-	@sleep 5
-	@if command -v pwsh > /dev/null; then \
-		cd scripts && pwsh -File validate-data-consistency.ps1; \
-	else \
-		echo "$(RED)❌ Script de validação requer PowerShell.$(RESET)"; \
-		exit 1; \
-	fi
+	cd scripts && pwsh -File validate-data-consistency.ps1
 
 test-flink: init flink-job producer validate ## Pipeline completo de teste com Flink
 	@echo ""
