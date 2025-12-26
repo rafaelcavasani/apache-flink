@@ -3,8 +3,173 @@
 ## Arquitetura
 
 ```
-Produtor → Kafka → Apache Flink → Elasticsearch
+Produtor → Kafka → Apache Flink/Spark → DynamoDB + Elasticsearch
 ```
+
+## 🚀 Quick Start - Executando o Projeto
+
+Este projeto utiliza um **Makefile** para simplificar a execução. Siga os passos abaixo para iniciar e validar o pipeline completo:
+
+### 1️⃣ Subir a Infraestrutura
+
+Primeiro, inicie todos os serviços Docker (Kafka, Elasticsearch, DynamoDB, Flink/Spark):
+
+```bash
+make services
+```
+
+Este comando iniciará:
+- **Kafka** (broker de mensagens) - http://localhost:8090 (UI)
+- **Elasticsearch** (storage de agregações) - http://localhost:9200
+- **DynamoDB Local** (storage de eventos) - http://localhost:8001 (Admin)
+- **Zookeeper** (coordenação do Kafka)
+
+⏱️ **Aguarde ~30 segundos** para os serviços ficarem prontos.
+
+---
+
+### 2️⃣ Inicializar Recursos
+
+Crie os tópicos no Kafka, tabela no DynamoDB e índice no Elasticsearch:
+
+```bash
+make init
+```
+
+Este comando executa:
+- `make init-kafka` - Cria tópicos: `recebiveis-agendados`, `recebiveis-cancelados`, `recebiveis-negociados`
+- `make init-db` - Cria tabela `Recebiveis` no DynamoDB com GSI `ClienteIndex`
+- `make init-es` - Cria índice `ciclo_vida_recebiveis` no Elasticsearch
+
+✅ Após este passo, a infraestrutura está pronta para receber eventos!
+
+---
+
+### 3️⃣ Executar o Job de Processamento
+
+Escolha entre **Flink** ou **Spark** para processar os eventos:
+
+#### Opção A: Apache Flink
+
+```bash
+make flink-job
+```
+
+Este comando:
+1. Compila o job Flink (`mvn clean package`)
+2. Submete o JAR para o Flink JobManager
+3. Inicia o processamento stream em tempo real
+
+📊 **Acesse o dashboard**: http://localhost:8081
+
+#### Opção B: Apache Spark Streaming
+
+```bash
+make spark-job
+```
+
+Este comando:
+1. Inicia o cluster Spark (Master + Workers)
+2. Executa o job de streaming com micro-batches
+3. Processa eventos a cada 15 segundos
+
+📊 **Acesse o dashboard**: http://localhost:8082
+
+---
+
+### 4️⃣ Enviar Eventos de Teste
+
+Execute o producer Go para gerar eventos simulados no Kafka:
+
+```bash
+make producer
+```
+
+Este comando envia **100 eventos** simulando o ciclo de vida de recebíveis:
+- **AGENDADO**: Criação de novo recebível
+- **CANCELADO**: Cancelamento de recebível
+- **NEGOCIADO**: Negociação/liquidação antecipada
+
+Os eventos serão processados pelo job (Flink ou Spark) e armazenados em:
+- **DynamoDB**: Eventos brutos individuais
+- **Elasticsearch**: Dados agregados por janela de tempo (15 segundos)
+
+---
+
+### 5️⃣ Validar Resultados
+
+Verifique se os dados foram processados corretamente:
+
+```bash
+make validate
+```
+
+Este comando:
+1. Compara dados entre DynamoDB e Elasticsearch
+2. Valida consistência de `id_recebivel`
+3. Verifica cálculos de agregação (`valor_disponivel`)
+4. Gera relatório de validação
+
+✅ **Resultado esperado**: Todos os IDs encontrados em ambos os storages com valores consistentes.
+
+---
+
+### 📋 Comandos Adicionais Úteis
+
+```bash
+# Ver status de todos os serviços
+make status
+
+# Contar documentos no Elasticsearch
+make es-count
+
+# Contar itens no DynamoDB
+make dynamodb-count
+
+# Listar tópicos Kafka
+make kafka-topics
+
+# Ver logs do job Spark
+make spark-logs
+
+# Ver logs do job Flink
+docker-compose logs -f jobmanager
+
+# Parar job Spark
+make spark-stop
+
+# Cancelar jobs Flink
+make flink-cancel
+
+# Reiniciar tudo
+make restart
+
+# Parar todos os serviços
+make down
+
+# Limpeza completa (remove volumes)
+make clean
+```
+
+---
+
+### 🧪 Pipeline Completo de Teste
+
+Execute o fluxo completo automaticamente:
+
+**Com Flink:**
+```bash
+make test-flink
+```
+
+**Com Spark:**
+```bash
+make test-spark
+```
+
+Estes comandos executam sequencialmente: `init` → `job` → `producer` → `validate`
+
+---
 
 ## Componentes
 
@@ -32,32 +197,27 @@ Produtor → Kafka → Apache Flink → Elasticsearch
 - **Porta**: 2181
 - **Função**: Coordenação do cluster Kafka
 
-## Como Usar
+## Detalhes dos Componentes
 
-### Iniciar a Pipeline (Automatizado)
+### Tópicos Kafka
+- `recebiveis-agendados` (3 partições, 7 dias retenção)
+- `recebiveis-cancelados` (2 partições, 30 dias retenção)
+- `recebiveis-negociados` (2 partições, 30 dias retenção)
 
-**Windows**:
-```bash
-start.bat
-```
+### Tabela DynamoDB
+- **Nome**: `Recebiveis`
+- **Chave primária**: `id_recebivel` (String)
+- **GSI**: `ClienteIndex` com `codigo_cliente` como chave de partição
 
-**Linux/Mac**:
-```bash
-chmod +x start.sh init-kafka.sh init-dynamodb.sh
-./start.sh
-```
+### Índice Elasticsearch
+- **Nome**: `ciclo_vida_recebiveis`
+- **Campos agregados**: `id_recebivel`, `codigo_cliente`, `valor_disponivel`, `ultima_atualizacao`
 
-O script automatizado irá:
-1. Subir todos os containers
-2. Aguardar inicialização dos serviços
-3. Criar tópicos no Kafka:
-   - `recebiveis-eventos` (3 partições, 7 dias retenção)
-   - `recebiveis-cancelamentos` (2 partições, 30 dias retenção)
-   - `recebiveis-negociacoes` (2 partições, 30 dias retenção)
-   - `recebiveis-agregados` (3 partições, 24h retenção)
-4. Criar tabela `Recebiveis` no DynamoDB com índices GSI
+---
 
-### Iniciar Manualmente
+## Modo Manual (Alternativo)
+
+Se preferir executar sem o Makefile:
 
 ```bash
 # 1. Subir containers
@@ -65,11 +225,20 @@ docker-compose up -d
 
 # 2. Aguardar ~30 segundos
 
-# 3. Criar tópicos Kafka
-bash init-kafka.sh
+# 3. Criar recursos
+cd scripts
+pwsh -File init-kafka.ps1
+pwsh -File init-dynamodb.ps1
+pwsh -File init-elasticsearch.ps1
 
-# 4. Criar tabelas DynamoDB
-bash init-dynamodb.sh
+# 4. Executar job
+make flink-job  # ou make spark-job
+
+# 5. Enviar eventos
+cd producer && go run main.go -count 100 -interval 10ms
+
+# 6. Validar
+cd scripts && pwsh -File validate-data-consistency.ps1
 ```
 
 ### Verificar Status dos Serviços

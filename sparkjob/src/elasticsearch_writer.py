@@ -16,6 +16,8 @@ def write_to_elasticsearch(enriched_df: DataFrame, config: Dict[str, Any]):
     Write enriched CicloVidaRecebivel data to Elasticsearch using Spark native connector
     Equivalent to ElasticsearchSink.invoke()
     """
+    from pyspark.sql.functions import current_timestamp, date_format
+    
     es_config = config["elasticsearch"]
     index_name = es_config["index.name"]
     
@@ -29,10 +31,22 @@ def write_to_elasticsearch(enriched_df: DataFrame, config: Dict[str, Any]):
     
     logger.info(f"Writing {count} records to Elasticsearch using Spark connector")
     
+    # Add ultima_atualizacao timestamp
+    df_with_timestamp = enriched_df.withColumn(
+        "ultima_atualizacao",
+        date_format(current_timestamp(), "yyyy-MM-dd'T'HH:mm:ss'Z'")
+    )
+    
+    # Log a sample record for debugging
+    logger.info("Sample record to be written:")
+    sample = df_with_timestamp.take(1)
+    if sample:
+        logger.info(f"  Sample: {sample[0].asDict()}")
+    
     try:
         # Write using Spark Elasticsearch connector
         # The connector handles distributed writing automatically
-        enriched_df.write \
+        df_with_timestamp.write \
             .format("org.elasticsearch.spark.sql") \
             .option("es.nodes", "elasticsearch") \
             .option("es.port", "9200") \

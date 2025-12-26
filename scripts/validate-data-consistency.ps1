@@ -115,8 +115,16 @@ foreach ($id in $ReceivableIds) {
         
         # Validação 5: Soma de cancelamentos
         if ($canceladoEvents.Count -gt 0) {
-            $dynamoTotalCancelado = ($canceladoEvents | ForEach-Object { [double]$_.valor_cancelado.N } | Measure-Object -Sum).Sum
-            $esTotalCancelado = $esData.valor_total_cancelado
+            $dynamoTotalCancelado = ($canceladoEvents | ForEach-Object { 
+                if ($_.valor_cancelado -and $_.valor_cancelado.N) {
+                    [double]$_.valor_cancelado.N 
+                } else { 
+                    0 
+                }
+            } | Measure-Object -Sum).Sum
+            
+            $esTotalCancelado = if ($esData.valor_total_cancelado) { $esData.valor_total_cancelado } else { 0 }
+            
             if ([math]::Abs($esTotalCancelado - $dynamoTotalCancelado) -gt 0.01) {
                 $result.errors += "Divergência no total cancelado: ES=$([math]::Round($esTotalCancelado, 2)) vs DynamoDB=$([math]::Round($dynamoTotalCancelado, 2))"
             }
@@ -124,20 +132,30 @@ foreach ($id in $ReceivableIds) {
         
         # Validação 6: Soma de negociações
         if ($negociadoEvents.Count -gt 0) {
-            $dynamoTotalNegociado = ($negociadoEvents | ForEach-Object { [double]$_.valor_negociado.N } | Measure-Object -Sum).Sum
-            $esTotalNegociado = $esData.valor_total_negociado
+            $dynamoTotalNegociado = ($negociadoEvents | ForEach-Object { 
+                if ($_.valor_negociado -and $_.valor_negociado.N) {
+                    [double]$_.valor_negociado.N 
+                } else { 
+                    0 
+                }
+            } | Measure-Object -Sum).Sum
+            
+            $esTotalNegociado = if ($esData.valor_total_negociado) { $esData.valor_total_negociado } else { 0 }
+            
             if ([math]::Abs($esTotalNegociado - $dynamoTotalNegociado) -gt 0.01) {
                 $result.errors += "Divergência no total negociado: ES=$([math]::Round($esTotalNegociado, 2)) vs DynamoDB=$([math]::Round($dynamoTotalNegociado, 2))"
             }
         }
         
         # Validação 7: Arrays de cancelamentos e negociações
-        if ($esData.cancelamentos.Count -ne $canceladoEvents.Count) {
-            $result.errors += "Divergência no array de cancelamentos: ES=$($esData.cancelamentos.Count) itens vs DynamoDB=$($canceladoEvents.Count) eventos"
+        $esCancelamentosCount = if ($esData.cancelamentos) { $esData.cancelamentos.Count } else { 0 }
+        if ($esCancelamentosCount -ne $canceladoEvents.Count) {
+            $result.errors += "Divergência no array de cancelamentos: ES=$esCancelamentosCount itens vs DynamoDB=$($canceladoEvents.Count) eventos"
         }
         
-        if ($esData.negociacoes.Count -ne $negociadoEvents.Count) {
-            $result.errors += "Divergência no array de negociações: ES=$($esData.negociacoes.Count) itens vs DynamoDB=$($negociadoEvents.Count) eventos"
+        $esNegociacoesCount = if ($esData.negociacoes) { $esData.negociacoes.Count } else { 0 }
+        if ($esNegociacoesCount -ne $negociadoEvents.Count) {
+            $result.errors += "Divergência no array de negociações: ES=$esNegociacoesCount itens vs DynamoDB=$($negociadoEvents.Count) eventos"
         }
         
         # Resultado final
@@ -149,16 +167,17 @@ foreach ($id in $ReceivableIds) {
             $result.consistency_check = "ERROR"
             $errorCount++
             Write-Host "  ❌ ERROS ENCONTRADOS:" -ForegroundColor Red
-            foreach ($error in $result.errors) {
-                Write-Host "     • $error" -ForegroundColor Red
+            foreach ($validationError in $result.errors) {
+                Write-Host "     • $validationError" -ForegroundColor Red
             }
         }
         
     } catch {
         $result.consistency_check = "ERROR"
-        $result.errors += $_.Exception.Message
+        $exceptionMsg = $_.Exception.Message
+        $result.errors += $exceptionMsg
         $errorCount++
-        Write-Host "  ❌ ERRO: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "  ❌ ERRO: $exceptionMsg" -ForegroundColor Red
     }
     
     $validationResults += $result
@@ -180,8 +199,8 @@ if ($errorCount -gt 0) {
     foreach ($result in $validationResults | Where-Object { $_.consistency_check -eq "ERROR" }) {
         Write-Host ""
         Write-Host "  ID: $($result.id_recebivel)" -ForegroundColor White
-        foreach ($error in $result.errors) {
-            Write-Host "    • $error" -ForegroundColor Red
+        foreach ($validationError in $result.errors) {
+            Write-Host "    • $validationError" -ForegroundColor Red
         }
     }
 }

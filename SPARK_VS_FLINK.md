@@ -454,6 +454,92 @@ Muitas organizações usam **ambos**:
 
 ---
 
+## Windowing e Watermarks
+
+### Conceito de Windowing
+
+**Windowing** é um conceito fundamental em processamento de streams que divide o fluxo contínuo de dados em "janelas" (windows) finitas para que possam ser processados e agregados. Como streams são potencialmente infinitos, as janelas permitem aplicar operações como count, sum, average sobre conjuntos definidos de eventos.
+
+Ambos Spark e Flink suportam windowing, mas com diferenças na implementação e performance:
+
+**Apache Spark:**
+- Windowing baseado em micro-batching
+- Windows definidas em DataFrames com `window()` function
+- Processamento por lotes dentro de cada janela
+- Latência maior devido ao modelo de micro-batch
+
+```python
+# Spark: Window de 5 minutos
+df.groupBy(
+    window("timestamp", "5 minutes"),
+    "customer_id"
+).agg(sum("value"))
+```
+
+**Apache Flink:**
+- Windowing nativo no processamento contínuo
+- APIs ricas: `TumblingWindows`, `SlidingWindows`, `SessionWindows`
+- Processamento evento por evento dentro das janelas
+- Latência muito menor
+
+```java
+// Flink: Window de 5 minutos
+stream
+    .keyBy(event -> event.getCustomerId())
+    .window(TumblingEventTimeWindows.of(Time.minutes(5)))
+    .aggregate(new MyAggregateFunction());
+```
+
+### Watermarks
+
+**Watermarks** são marcadores temporais que indicam "todos os eventos até este timestamp já foram processados". São essenciais para lidar com eventos que chegam fora de ordem (out-of-order events).
+
+**Apache Spark:**
+- Watermarks configurados com `withWatermark()`
+- Usado para dropar dados antigos e gerenciar estado
+- Menos flexível que Flink
+
+```python
+df.withWatermark("event_time", "10 minutes") \
+  .groupBy(window("event_time", "5 minutes")) \
+  .count()
+```
+
+**Apache Flink:**
+- Watermarks nativos e altamente configuráveis
+- Suporte a múltiplas estratégias de geração
+- Lida melhor com eventos muito atrasados
+- `allowedLateness()` para processar eventos após watermark
+
+```java
+stream.assignTimestampsAndWatermarks(
+    WatermarkStrategy
+        .forBoundedOutOfOrderness(Duration.ofMinutes(1))
+        .withTimestampAssigner((event, ts) -> event.getTimestamp())
+);
+```
+
+### Resumo dos Tipos de Janelas
+
+| Tipo | Tamanho | Sobreposição | Uso | Spark | Flink |
+|------|---------|--------------|-----|-------|-------|
+| **Tumbling Time** | Fixo | Não | Agregações periódicas (ex: total por hora) | ✅ | ✅ |
+| **Sliding Time** | Fixo | Sim | Médias móveis, tendências | ✅ | ✅ |
+| **Session** | Dinâmico | Não | Análise de sessões de usuário | ⚠️ Limitado | ✅ Completo |
+| **Tumbling Count** | N eventos | Não | Agregação a cada N eventos | ❌ | ✅ |
+| **Sliding Count** | N eventos | Sim | Top-N deslizante | ❌ | ✅ |
+| **Global** | Toda stream | N/A | Agregação completa (requer trigger) | ⚠️ | ✅ |
+
+**Diferenças Principais:**
+
+1. **Event-Time Processing**: Flink tem suporte nativo mais robusto; Spark requer configuração cuidadosa
+2. **Out-of-Order Events**: Flink lida melhor com eventos fora de ordem através de watermarks flexíveis
+3. **Allowed Lateness**: Flink permite processar eventos atrasados; Spark descarta após watermark
+4. **Session Windows**: Flink tem suporte completo; Spark tem limitações
+5. **Performance**: Flink processa janelas com menor latência devido ao processamento contínuo
+
+---
+
 ## Referências
 
 - [Apache Spark Documentation](https://spark.apache.org/docs/latest/)

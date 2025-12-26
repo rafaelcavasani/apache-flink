@@ -123,6 +123,12 @@ def enrich_receivable(
         if tipo_evento == 'agendado':
             if valor_original is None and 'valor_original' in item:
                 valor_original = decimal_to_float(item['valor_original'])
+                # Ensure it's a float, not a string
+                if isinstance(valor_original, str):
+                    try:
+                        valor_original = float(valor_original)
+                    except (ValueError, TypeError):
+                        valor_original = 0.0
                 logger.info(f"  [ENRICH] Extracted valor_original: {valor_original} for id: {id_recebivel}")
             
             if id_pagamento is None and 'id_pagamento' in item:
@@ -164,6 +170,12 @@ def enrich_receivable(
             
             if 'valor_cancelado' in item:
                 valor = decimal_to_float(item['valor_cancelado'])
+                # Ensure it's a float, not a string
+                if isinstance(valor, str):
+                    try:
+                        valor = float(valor)
+                    except (ValueError, TypeError):
+                        valor = 0.0
                 cancelamento['valor_cancelado'] = valor
                 total_cancelado += valor
                 logger.info(f"  [ENRICH] Added cancelamento with value: {valor} for id: {id_recebivel}")
@@ -185,6 +197,12 @@ def enrich_receivable(
             
             if 'valor_negociado' in item:
                 valor = decimal_to_float(item['valor_negociado'])
+                # Ensure it's a float, not a string
+                if isinstance(valor, str):
+                    try:
+                        valor = float(valor)
+                    except (ValueError, TypeError):
+                        valor = 0.0
                 negociacao['valor_negociado'] = valor
                 total_negociado += valor
                 logger.info(f"  [ENRICH] Added negociacao with value: {valor} for id: {id_recebivel}")
@@ -201,15 +219,15 @@ def enrich_receivable(
         f"total_negociado: {total_negociado}, valor_disponivel: {valor_disponivel}"
     )
     
-    # Return enriched data
+    # Return enriched data with proper defaults for None values
     return {
         "id_recebivel": id_recebivel,
-        "id_pagamento": id_pagamento,
-        "codigo_produto": codigo_produto,
-        "codigo_produto_parceiro": codigo_produto_parceiro,
-        "modalidade": modalidade,
-        "valor_original": valor_original,
-        "data_vencimento": data_vencimento,
+        "id_pagamento": id_pagamento if id_pagamento else "",
+        "codigo_produto": codigo_produto if codigo_produto is not None else 0,
+        "codigo_produto_parceiro": codigo_produto_parceiro if codigo_produto_parceiro is not None else 0,
+        "modalidade": modalidade if modalidade is not None else 0,
+        "valor_original": valor_original if valor_original is not None else 0.0,
+        "data_vencimento": data_vencimento if data_vencimento else "",
         "cancelamentos": cancelamentos,
         "negociacoes": negociacoes,
         "valor_disponivel": valor_disponivel,
@@ -218,7 +236,7 @@ def enrich_receivable(
         "quantidade_eventos": event_count,
         "quantidade_cancelamentos": len(cancelamentos),
         "quantidade_negociacoes": len(negociacoes),
-        "timestamp": timestamp,
+        "timestamp": timestamp if timestamp else "",
         "window_start": window_start,
         "window_end": window_end
     }
@@ -227,7 +245,7 @@ def enrich_receivable(
 def enrich_with_dynamodb(batch_df: DataFrame, config: Dict[str, Any]) -> DataFrame:
     """
     Enrich aggregated data with historical events from DynamoDB
-    Equivalent to DynamoDBEnricher.map() for each record
+    Collects aggregated data and enriches each receivable by querying DynamoDB
     """
     dynamodb_config = config["dynamodb"]
     endpoint = dynamodb_config["endpoint"]
@@ -236,24 +254,25 @@ def enrich_with_dynamodb(batch_df: DataFrame, config: Dict[str, Any]) -> DataFra
     
     logger.info("Starting DynamoDB enrichment")
     
-    # Create UDF for enrichment
-    enrich_udf = udf(
-        lambda id_rec, ws, we, ec: enrich_receivable(
-            id_rec, ws, we, ec, endpoint, region, table_name
-        ),
-        get_enriched_schema()
-    )
+    # Collect rows to driver for enrichment (batch is already small after aggregation)
+    rows = batch_df.collect()
+    enriched_records = []
     
-    # Apply enrichment
-    enriched_df = batch_df.withColumn(
-        "enriched",
-        enrich_udf(
-            col("id_recebivel"),
-            col("window_start").cast("long"),
-            col("window_end").cast("long"),
-            col("event_count")
+    for row in rows:
+        enriched_data = enrich_receivable(
+            id_recebivel=row.id_recebivel,
+            window_start=int(row.window_start.timestamp()) if row.window_start else 0,
+            window_end=int(row.window_end.timestamp()) if row.window_end else 0,
+            event_count=row.event_count,
+            endpoint=endpoint,
+            region=region,
+            table_name=table_name
         )
-    ).select("enriched.*")
+        enriched_records.append(enriched_data)
+    
+    # Create DataFrame from enriched records
+    spark = batch_df.sparkSession
+    enriched_df = spark.createDataFrame(enriched_records, schema=get_enriched_schema())
     
     logger.info("DynamoDB enrichment completed")
     return enriched_df
