@@ -107,7 +107,12 @@ foreach ($id in $ReceivableIds) {
         
         # Validação 4: Valor original
         if ($agendadoEvents.Count -gt 0) {
-            $dynamoValorOriginal = [double]$agendadoEvents[0].valor_original.N
+            $dynamoValorOriginal = if ($agendadoEvents[0].valor_original.N) {
+                [double]$agendadoEvents[0].valor_original.N
+            } elseif ($agendadoEvents[0].valor_original.S) {
+                [double]$agendadoEvents[0].valor_original.S
+            } else { 0 }
+            
             if ($esData.valor_original -ne $dynamoValorOriginal) {
                 $result.errors += "Divergência no valor original: ES=$($esData.valor_original) vs DynamoDB=$dynamoValorOriginal"
             }
@@ -118,6 +123,8 @@ foreach ($id in $ReceivableIds) {
             $dynamoTotalCancelado = ($canceladoEvents | ForEach-Object { 
                 if ($_.valor_cancelado -and $_.valor_cancelado.N) {
                     [double]$_.valor_cancelado.N 
+                } elseif ($_.valor_cancelado -and $_.valor_cancelado.S) {
+                    [double]$_.valor_cancelado.S
                 } else { 
                     0 
                 }
@@ -135,6 +142,8 @@ foreach ($id in $ReceivableIds) {
             $dynamoTotalNegociado = ($negociadoEvents | ForEach-Object { 
                 if ($_.valor_negociado -and $_.valor_negociado.N) {
                     [double]$_.valor_negociado.N 
+                } elseif ($_.valor_negociado -and $_.valor_negociado.S) {
+                    [double]$_.valor_negociado.S
                 } else { 
                     0 
                 }

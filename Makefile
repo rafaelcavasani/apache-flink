@@ -113,13 +113,24 @@ flink-list: ## Lista todos os jobs Flink
 # Spark Jobs
 # ==========================================
 
-spark-job: ## Inicia o job Spark em background
+spark-job: ## Inicia o job Spark em background (com workers e checkpoints limpos)
+	@echo "$(BLUE)🚀 Iniciando cluster Spark...$(RESET)"
+	@echo "$(YELLOW)🧹 Limpando checkpoints antigos...$(RESET)"
+	@docker exec spark-master rm -rf /tmp/spark-checkpoints/* 2>nul || echo Checkpoints limpos
+	@echo "$(BLUE)⚙️  Iniciando Spark Master + Workers...$(RESET)"
+	docker-compose up -d spark-master
+	docker-compose up -d --scale spark-worker=2 spark-worker
+	@echo "$(BLUE)⏳ Aguardando workers conectarem (5 segundos)...$(RESET)"
+	@timeout /t 5 /nobreak >nul 2>nul || sleep 5
 	@echo "$(BLUE)🚀 Iniciando job Spark...$(RESET)"
 	docker-compose --profile spark-streaming up -d spark-job
-	@echo "$(GREEN)✅ Job Spark iniciado!$(RESET)"
-	@echo "$(BLUE)Acesse: http://localhost:8082$(RESET)"
+	@echo "$(GREEN)✅ Job Spark iniciado com sucesso!$(RESET)"
 	@echo ""
-	@echo "$(YELLOW)Para ver logs: docker-compose logs -f spark-job$(RESET)"
+	@echo "$(BLUE)Serviços disponíveis:$(RESET)"
+	@echo "  - Spark Master UI: http://localhost:8082"
+	@echo "  - Spark Job Logs:  docker-compose logs -f spark-job"
+	@echo ""
+	@echo "$(YELLOW)Aguarde ~30 segundos para o primeiro batch processar$(RESET)"
 
 spark-stop: ## Para o job Spark
 	@echo "$(YELLOW)⏹️  Parando job Spark...$(RESET)"
